@@ -1,4 +1,11 @@
 import random
+import pylab
+
+MAX_DATA = 1000
+rs = [0] * MAX_DATA
+es = [0.0] * MAX_DATA
+us = [0.0] * MAX_DATA
+ys = [0] * MAX_DATA
 
 
 class Buffer:
@@ -14,7 +21,7 @@ class Buffer:
         u = min(u, self.max_wip)
         self.wip += u
         
-        # Transfer from rady pool to queue
+        # Transfer from raedy pool to queue
         r = int(round(random.uniform(0, self.wip)))
         self.wip -= r
         self.queued += r
@@ -49,6 +56,8 @@ def open_loop(p, tm = 5000):
 
 
 def closed_loop(c, p, tm = 5000):
+    global rs, es, us, ys
+
     def set_point(t):
         if t < 100: return 0
         if t < 300: return 50
@@ -63,6 +72,15 @@ def closed_loop(c, p, tm = 5000):
 
         #print t, r, e, u, y
         print("%d %d %f %f %d" % (t, r, e, u, y))
+        rs[t], es[t], us[t], ys[t] = r, e, u, y
+
+def plot(fname):
+    pylab.figure()
+    pylab.plot(rs, 'b.-')
+    pylab.plot(ys, 'r.-')
+
+    pylab.savefig("chap1.png")
+    pylab.show()
 
 #c = Controller(1.25, 0.01)
 #p = Buffer(50, 10)
@@ -73,3 +91,4 @@ c = Controller(1.25, 0.01)
 p = Buffer(50, 10)
 
 closed_loop(c, p, 1000)
+plot("result.png")
