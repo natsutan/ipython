@@ -52,8 +52,6 @@ def open_loop(p, tm = 5000):
         u = target(t)
         y = p.work(u)
 
-        #print t, u, 0, u, y
-
 
 def closed_loop(c, p, tm = 5000):
     global rs, es, us, ys
@@ -77,6 +75,7 @@ def closed_loop(c, p, tm = 5000):
 def plot(fname):
     pylab.figure()
     pylab.plot(rs, 'b.-')
+    pylab.plot(us, 'y.-')
     pylab.plot(ys, 'r.-')
 
     pylab.savefig("chap1.png")
@@ -84,11 +83,10 @@ def plot(fname):
 
 #c = Controller(1.25, 0.01)
 #p = Buffer(50, 10)
-
 #open_loop(p, 1000)
 
-c = Controller(1.25, 0.01)
+c = Controller(1.10, 0.01)
 p = Buffer(50, 10)
 
-closed_loop(c, p, 1000)
+closed_loop(c, p, MAX_DATA)
 plot("result.png")
