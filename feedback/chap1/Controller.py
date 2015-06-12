@@ -5,7 +5,8 @@ from myhdl import *
 
 def controller_top(
         clk, reset,
-        kp, ki, e,
+        e,
+        reg_kp, reg_ki,
         out,
     ):
 
@@ -19,7 +20,7 @@ def controller_top(
             i = 0
         else:
             i = i +  e
-            out.next = kp * e + ki * i
+            out.next = reg_kp * e + reg_ki * i
 
 
     return fsm

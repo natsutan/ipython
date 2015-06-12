@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 __author__ = 'natu'
+import random
 from myhdl import Signal, delay, always, now, Simulation, instance, intbv, traceSignals, ResetSignal, toVerilog
 #from feedback_hdl import feedback_top
-#from reg_driver import reg_driver_top
+from reg_driver import reg_driver_top
 
 
 def run_sim():
@@ -21,6 +22,7 @@ def env():
     uResetDriver = ResetDriver(clk, reset)
 
     # input port
+
     rin = Signal(intbv(0, min=0, max=256))
     gin = Signal(intbv(0, min=0, max=256))
     bin = Signal(intbv(0, min=0, max=256))
@@ -34,20 +36,12 @@ def env():
     wen  = Signal(bool(0))
 
     # registers
-    reg_start = Signal(bool(0))
-    reg_end = Signal(bool(0))
-    reg_width = Signal(intbv(0, min=0, max=p_max_x))
-    reg_height = Signal(intbv(0, min=0, max=p_max_y))
-    reg_roi_x = Signal(intbv(0, min=0, max=p_max_x))
-    reg_roi_y = Signal(intbv(0, min=0, max=p_max_y))
-    reg_roi_w = Signal(intbv(0, min=0, max=p_max_x))
-    reg_roi_h = Signal(intbv(0, min=0, max=p_max_y))
+    reg_kp = 0.0
+    reg_ki = 0.0
 
     uRegDriver = reg_driver_top(
         clk, reset,
-        reg_start, reg_end,
-        reg_width, reg_height,
-        reg_roi_x, reg_roi_y, reg_roi_h, reg_roi_w
+        reg_kp, reg_ki
         )
 
 
@@ -96,3 +90,31 @@ def ResetDriver(clk, reset):
 
     return driveReset
 
+
+def Buffer(clk, reset, max_wip, max_flow, u, queued):
+
+    queued = 0
+    wip = 0  # work in progress
+    max_wip = max_wip
+    max_flow = max_flow
+
+    @instance
+    def buffer():
+        while(True):
+            # Add to ready pool
+            u = max(0, int(round(u)))
+            u = min(u, max_wip)
+            wip = wip + u
+
+            # Transfer from raedy pool to queue
+            r = int(round(random.uniform(0, wip)))
+            wip -= r
+            queued += r
+
+            r = int(round(random.uniform(0, max_flow)))
+            r = min(r, queued)
+            queued.next -= r
+            yield clk.posedge
+
+
+    return buffer
